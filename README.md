@@ -10,7 +10,8 @@ Les données des espèces de fleurs seront récupérées depuis Info Flora. Des 
 L’objectif est d’encourager l’exploration de la nature tout en découvrant la variété de leurs couleurs en fonction de l'altitude et du type de région.
 
 ## Wireframe
-<a href="https://www.figma.com/design/75HxPTTM8YXUpJtecaTIjy/VisualDon---Projet?node-id=78-213&t=2Z7AEFECnkqlfLTj-1">Lien Figma</a>
+<a href="https://www.figma.com/design/75HxPTTM8YXUpJtecaTIjy/VisualDon---Projet?node-id=78-213&t=2Z7AEFECnkqlfLTj-1](https://www.figma.com/design/75HxPTTM8YXUpJtecaTIjy/VisualDon---Projet?node-id=0-1&t=2Z7AEFECnkqlfLTj-1)">Planches Figma</a>
+<a href="https://www.figma.com/proto/75HxPTTM8YXUpJtecaTIjy/VisualDon---Projet?page-id=0%3A1&node-id=38-1265&viewport=-1214%2C175%2C0.31&t=fhLXxFiaLW7x77w3-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=34%3A30">Prototype Figma</a>
 
 ## Références
 ### Graphiques
