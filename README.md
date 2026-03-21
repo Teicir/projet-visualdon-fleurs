@@ -1,13 +1,16 @@
 # Nuancier de fleurs par région
 
 ## Description
-Ce projet a pour but de cartographier la diversité de la flore suisse par région. Il présente les espèces locales et les organise sous forme de nuancier pour identifier les couleurs dominantes de chaque zone géographique. Chaque nuancier est séparé en régions dépendantes de l'altitude et de son type (urbains, campagnes, montagnes). Il sera possible de cliquer sur les différentes couleurs pour obtenir des infos plus détaillées sur la plante correspondante.
+Ce projet a pour but de montrer la diversité et la couleur de la flore suisse par région. Il les présente sous forme de nuancier, intégré dans un paysage qui permet d'identifier les couleurs dominantes de chaque zone géographique et ce pour chaque mois de l'année. Chaque nuancier est séparé en régions dépendantes de l'altitude. Il sera possible de cliquer sur les différentes couleurs pour obtenir des infos plus détaillées sur la plante correspondante.
 
 ## Contexte
 Les données des espèces de fleurs seront récupérées depuis Info Flora. Des informations sur les couleurs de certaines espèces françaises sont disponibles depuis le jeu de données "FlorealData". Cependnat, il faudra probablement rentré certaines couleurs à la main ou utiliser des scripts en récupérant la couleur principale (hors vert) d'une photo d'InfoFlora si cela est possible.
 
 ## But
-L’objectif est d’encourager l’exploration de la nature tout en analysant la répartition des espèces et de leurs couleurs en fonction de l'altitude et du type de région.
+L’objectif est d’encourager l’exploration de la nature tout en découvrant la variété de leurs couleurs en fonction de l'altitude et du type de région.
+
+## Wireframe
+<a href="https://www.figma.com/design/75HxPTTM8YXUpJtecaTIjy/VisualDon---Projet?node-id=78-213&t=2Z7AEFECnkqlfLTj-1">Lien Figma</a>
 
 ## Références
 ### Graphiques
