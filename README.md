@@ -1,4 +1,4 @@
-# Nuancier de fleurs par région
+# Nuancier de fleurs par altitude et saison
 
 ## Description
 Ce projet a pour but de montrer la diversité et la couleur de la flore suisse par région. Il les présente sous forme de nuancier, intégré dans un paysage qui permet d'identifier les couleurs dominantes de chaque zone géographique et ce pour chaque mois de l'année. Chaque nuancier est séparé en régions dépendantes de l'altitude. Il sera possible de cliquer sur les différentes couleurs pour obtenir des infos plus détaillées sur la plante correspondante.
