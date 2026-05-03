@@ -49,13 +49,25 @@ function ExplorerSection() {
     return () => cleanup.forEach(fn => fn())
   }, [shapeToFlower])
 
-  // Parallaxe GSAP
+  // Parallaxe GSAP — montagnes visibles au départ, plaine et ville entrent depuis le bas au scroll
   useEffect(() => {
     const ctx = gsap.context(() => {
       const trigger = { trigger: sectionRef.current, start: 'top top', end: 'bottom bottom', scrub: 1.5 }
-      gsap.to(montRef.current,   { y: '-8%',  ease: 'none', scrollTrigger: trigger })
-      gsap.to(plaineRef.current, { y: '-18%', ease: 'none', scrollTrigger: trigger })
-      gsap.to(villeRef.current,  { y: '-32%', ease: 'none', scrollTrigger: trigger })
+
+      // Montagnes : léger mouvement de profondeur
+      gsap.to(montRef.current, { y: '-10%', ease: 'none', scrollTrigger: trigger })
+
+      // Plaine : part hors-écran, remonte jusqu'à sa position naturelle
+      gsap.fromTo(plaineRef.current,
+        { y: '100vh' },
+        { y: '0', ease: 'none', scrollTrigger: trigger }
+      )
+
+      // Ville : entre après la plaine
+      gsap.fromTo(villeRef.current,
+        { y: '100vh' },
+        { y: '0', ease: 'none', scrollTrigger: trigger }
+      )
     }, sectionRef)
     return () => ctx.revert()
   }, [])
