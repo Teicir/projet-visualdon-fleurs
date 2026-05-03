@@ -47,8 +47,12 @@ npm install html2canvas
 ```
 nuancier-fleurs/
 ├── public/
-│   └── data/
-│       └── fleurs.json              ← Copier ici le fichier JSON des fleurs
+│   ├── data/
+│   │   └── fleurs.json              ← Copier ici le fichier JSON des fleurs
+│   └── illustrations/
+│       ├── montagne.svg             ← Couche arrière-plan (formes id="montagne-1"…)
+│       ├── plaine.svg               ← Couche intermédiaire (formes id="plaine-1"…)
+│       └── ville.svg                ← Couche avant-plan (formes id="ville-1"…)
 ├── src/
 │   ├── components/
 │   │   ├── HeroSection.jsx          ← Page d'accueil avec grille de carrés
@@ -291,32 +295,50 @@ Illustration SVG décorative en bas de la section, similaire à la maquette :
 - Les couleurs des montagnes changent dynamiquement selon le filtre actuel (utiliser les 4–5 couleurs dominantes du nuancier filtré)
 - Lignes de hachures SVG sur les flancs pour la texture
 
-```jsx
-// src/components/MountainBackground.jsx
-function MountainBackground({ dominantColors }) {
-  // dominantColors : tableau des 4-5 premières couleurs du filtre actuel
-  const [c1, c2, c3, c4, c5] = dominantColors
+Les 3 SVG sont des fichiers statiques dans `public/illustrations/` — ils sont chargés directement comme composants React via import ou comme balises `<img>` inline.
 
+**Option recommandée : import comme composant React (inline SVG)**
+
+Cela permet à JS de manipuler les `id` des formes directement dans le DOM.
+
+```jsx
+// src/components/ParallaxLayers.jsx
+import { ReactComponent as MontagneIllustration } from '/illustrations/montagne.svg'
+import { ReactComponent as PlaineIllustration }   from '/illustrations/plaine.svg'
+import { ReactComponent as VilleIllustration }    from '/illustrations/ville.svg'
+
+// Ou avec Vite, utiliser le plugin vite-plugin-svgr :
+// npm install -D vite-plugin-svgr
+// puis dans vite.config.js : plugins: [react(), svgr()]
+```
+
+```jsx
+function ParallaxLayers() {
   return (
-    <svg
-      className="mountain-bg"
-      viewBox="0 0 1200 400"
-      preserveAspectRatio="xMidYMax slice"
-    >
-      {/* Montagne arrière-plan */}
-      <polygon points="0,400 200,150 400,400" fill={c1 || '#D4A5A5'} />
-      <polygon points="150,400 350,100 600,400" fill={c2 || '#C8A0C0'} />
-      <polygon points="400,400 650,80 900,400"  fill={c3 || '#A0B8D4'} />
-      <polygon points="700,400 950,120 1200,400" fill={c4 || '#C4B0A0'} />
-      <polygon points="950,400 1100,200 1200,300 1200,400" fill={c5 || '#D4C0B0'} />
-      {/* Lignes de hachures SVG sur les flancs */}
-      {/* ... ajouter des <line> ou <path> pour les hachures */}
-    </svg>
+    <>
+      <div className="parallax-layer layer-montagne" ref={montRef}>
+        <MontagneIllustration className="svg-layer" />
+      </div>
+      <div className="parallax-layer layer-plaine" ref={plaineRef}>
+        <PlaineIllustration className="svg-layer" />
+      </div>
+      <div className="parallax-layer layer-ville" ref={villeRef}>
+        <VilleIllustration className="svg-layer" />
+      </div>
+    </>
   )
 }
 ```
 
-> **Note :** Pour les hachures comme dans la maquette, utiliser des `<clipPath>` SVG + patterns de lignes diagonales.
+```css
+.svg-layer {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+```
+
+> **Note :** L'import inline SVG est indispensable pour que `document.getElementById('montagne-1')` fonctionne. Un `<img src="montagne.svg">` ne permet pas d'accéder aux éléments internes du SVG via JS.
 
 ---
 
@@ -761,9 +783,12 @@ function ExportButton({ targetId, colors }) {
   --text-secondary:#888888;
   --border:        #e0ddd5;
 
-  /* Typographie */
-  --font-display: 'Neue Haas Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-body:    Georgia, 'Times New Roman', serif;
+  /* Typographie — TT Commons (Adobe Fonts) */
+  --font-display: 'tt-commons', sans-serif;
+  --font-body:    'tt-commons', sans-serif;
+
+  /* Graisses utilisées */
+  /* 400 = Regular, 500 = Medium, 700 = Bold */
 
   /* Espacements */
   --space-xs: 4px;
@@ -780,9 +805,40 @@ function ExportButton({ targetId, colors }) {
 
 ### Typographie
 
-- **Titres** : Helvetica Neue Bold / Neue Haas Grotesk — géométrique, suisse (clin d'œil au contexte)
-- **Corps** : Georgia — contraste élégant avec les titres sans empattements
-- **Labels UI** (sliders, boutons) : Helvetica Neue Regular, uppercase, letter-spacing élevé
+Police unique : **TT Commons** via Adobe Fonts — géométrique, contemporaine, lisible à toutes les tailles.
+
+Intégration dans `index.html` :
+```html
+<head>
+  <!-- Adobe Fonts — TT Commons (Bold, Medium, Regular) -->
+  <link rel="stylesheet" href="https://use.typekit.net/avs4bzr.css">
+</head>
+```
+
+Utilisation des graisses :
+- **Titres** : `font-weight: 700` (Bold)
+- **Corps / descriptions** : `font-weight: 400` (Regular)
+- **Labels UI** (sliders, boutons, capsules) : `font-weight: 500` (Medium), uppercase, letter-spacing élevé
+
+```css
+/* Exemple d'application */
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+p, .modal-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+}
+
+.label, button, .panel-label {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+```
 
 ### Sliders — Style personnalisé
 
