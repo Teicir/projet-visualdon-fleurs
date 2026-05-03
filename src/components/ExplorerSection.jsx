@@ -1,11 +1,10 @@
-import { forwardRef, useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useFlowerFilter } from '../hooks/useFlowerFilter'
 import { updateAllLayers } from '../utils/updateSVGColors'
 import MonthSlider from './MonthSlider.jsx'
 import AltitudeSlider from './AltitudeSlider.jsx'
-import SwatchGrid from './SwatchGrid.jsx'
 import ExportButton from './ExportButton.jsx'
 import FlowerModal from './FlowerModal.jsx'
 import MontagneIllustration from '../illustrations/montagne.svg?react'
@@ -14,22 +13,44 @@ import VilleIllustration from '../illustrations/ville.svg?react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const ExplorerSection = forwardRef(function ExplorerSection(_, ref) {
+function ExplorerSection() {
   const [altitude, setAltitude] = useState(1000)
   const [month, setMonth] = useState(6)
   const [selectedFlower, setSelectedFlower] = useState(null)
+  const [shapeToFlower, setShapeToFlower] = useState({})
 
-  const sectionRef = ref
-  const montRef   = useRef(null)
-  const plaineRef = useRef(null)
-  const villeRef  = useRef(null)
+  const sectionRef = useRef(null)
+  const montRef    = useRef(null)
+  const plaineRef  = useRef(null)
+  const villeRef   = useRef(null)
 
-  const { flowers, uniqueColors, dominantColors } = useFlowerFilter(altitude, month)
+  const { flowers, dominantColors, uniqueColors } = useFlowerFilter(altitude, month)
 
-  useEffect(() => { updateAllLayers(flowers) }, [flowers])
-
+  // Mise à jour couleurs SVG + récupération du mapping forme → fleur
   useEffect(() => {
-    if (!sectionRef?.current) return
+    const mapping = updateAllLayers(flowers)
+    setShapeToFlower(mapping)
+  }, [flowers])
+
+  // Ajout des handlers de clic sur les formes SVG
+  useEffect(() => {
+    const cleanup = []
+    Object.entries(shapeToFlower).forEach(([id, flower]) => {
+      const el = document.getElementById(id)
+      if (!el) return
+      const handler = () => setSelectedFlower(flower)
+      el.addEventListener('click', handler)
+      el.style.cursor = 'pointer'
+      cleanup.push(() => {
+        el.removeEventListener('click', handler)
+        el.style.cursor = ''
+      })
+    })
+    return () => cleanup.forEach(fn => fn())
+  }, [shapeToFlower])
+
+  // Parallaxe GSAP
+  useEffect(() => {
     const ctx = gsap.context(() => {
       const trigger = { trigger: sectionRef.current, start: 'top top', end: 'bottom bottom', scrub: 1.5 }
       gsap.to(montRef.current,   { y: '-8%',  ease: 'none', scrollTrigger: trigger })
@@ -54,38 +75,26 @@ const ExplorerSection = forwardRef(function ExplorerSection(_, ref) {
         </div>
 
         <div className="controls-overlay">
-
-          {/* Haut-gauche : Couleurs dominantes */}
           <div className="panel panel-dominant">
             <div className="panel-dominant-header">
               <span className="panel-title">Couleurs dominantes</span>
-              <ExportButton targetId="swatch-export-target" colors={uniqueColors} />
+              <ExportButton targetId="dominant-export-target" colors={uniqueColors} />
             </div>
-            <div className="dominant-swatches">
+            <div className="dominant-swatches" id="dominant-export-target">
               {dominantColors.map(color => (
                 <div key={color} className="dominant-swatch" style={{ backgroundColor: color }} />
               ))}
             </div>
           </div>
 
-          {/* Haut-droite : Altitude (slider vertical) */}
           <AltitudeSlider value={altitude} onChange={setAltitude} />
-
-          {/* Bas-gauche : Saison */}
           <MonthSlider value={month} onChange={setMonth} />
-
-          {/* Nuancier complet — centré */}
-          <SwatchGrid
-            uniqueColors={uniqueColors}
-            flowers={flowers}
-            onSwatchClick={setSelectedFlower}
-          />
         </div>
       </div>
 
       <FlowerModal flower={selectedFlower} onClose={() => setSelectedFlower(null)} />
     </section>
   )
-})
+}
 
 export default ExplorerSection
