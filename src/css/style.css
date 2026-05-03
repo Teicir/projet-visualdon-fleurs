@@ -1,23 +1,524 @@
 :root {
-  --main-black: #181818;
-  --main-white: #fff;
-  --main-green: #47b68d;
-  --standard-margin: 20px;
+  --bg-hero:        #1a1a1a;
+  --bg-explorer:    #F0EEE8;
+  --bg-panel:       #ffffff;
+  --text-primary:   #1a1a1a;
+  --text-secondary: #888888;
+  --border:         #e0ddd5;
+  --accent:         #22c55e;
+
+  --font-display: 'tt-commons-pro', 'Helvetica Neue', sans-serif;
+  --font-body:    'tt-commons-pro', 'Helvetica Neue', sans-serif;
+
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 32px;
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body { font-family: var(--font-body); color: var(--text-primary); margin: 0; overflow-x: hidden; }
+h1, h2 { font-family: var(--font-display); font-weight: 700; }
+
+/* ─── HERO ────────────────────────────────────────────────────── */
+
+.hero-section {
+  position: relative;
+  height: 100vh;
+  background: var(--bg-hero);
+  overflow: hidden;
 }
 
-html {
-  font-size: 16px;
+.color-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 44px);
+  overflow: hidden;
 }
 
-body {
-  font-family: "tt-commons-pro", Helvetica, sans-serif;
-  color: var(--main-black);
+.color-square {
+  width: 44px;
+  height: 44px;
+  opacity: 0;
+  animation: squareReveal 0.3s ease forwards;
 }
 
-h1{
-  font-size: 50px;
+.color-square:hover {
+  transform: scale(1.12);
+  z-index: 2;
+  transition: transform 0.15s ease;
+}
+
+@keyframes squareReveal {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.hero-cta {
+  position: absolute;
+  left: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #000;
+  color: #fff;
+  padding: 2.5rem 3rem;
+  max-width: 480px;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.hero-cta h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 1.5rem;
+}
+
+.hero-cta button {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.hero-cta button:hover { background: #fff; color: #000; }
+
+/* ─── EXPLORER ────────────────────────────────────────────────── */
+
+.explorer-section {
+  height: 300vh;
+  position: relative;
+  background: var(--bg-explorer);
+}
+
+.parallax-container {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.parallax-layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.layer-montagne { z-index: 1; }
+.layer-plaine   { z-index: 2; }
+.layer-ville    { z-index: 3; }
+
+.svg-layer { width: 100%; height: 100%; }
+
+/* ─── CONTROLS OVERLAY ────────────────────────────────────────── */
+
+.controls-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.controls-overlay button,
+.controls-overlay input {
+  pointer-events: auto;
+}
+
+/* ─── PANEL BASE ──────────────────────────────────────────────── */
+
+.panel {
+  position: absolute;
+  background: var(--bg-panel);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  pointer-events: auto;
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.panel-label-small {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+}
+
+/* ─── PANEL COULEURS DOMINANTES (haut-gauche) ─────────────────── */
+
+.panel-dominant {
+  top: 28px;
+  left: 28px;
+  padding: 16px 20px 18px;
+  min-width: 320px;
+}
+
+.panel-dominant-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.dominant-swatches {
+  display: flex;
+  gap: 10px;
+}
+
+.dominant-swatch {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transition: transform 0.2s ease;
+}
+
+.dominant-swatch:hover { transform: scale(1.08); }
+
+/* ─── PANEL ALTITUDE (haut-droite, slider vertical) ──────────── */
+
+.panel-altitude {
+  top: 28px;
+  right: 28px;
+  padding: 16px 20px 18px;
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.altitude-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.altitude-track-area {
+  position: relative;
+  height: 160px;
+  width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ligne décorative verticale */
+.altitude-track-line {
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+  pointer-events: none;
+}
+
+/* Indicateur de valeur courante (point vert + label) */
+.altitude-current-indicator {
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.altitude-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.altitude-current-label {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Slider vertical — invisible mais interactif par-dessus */
+.altitude-range {
+  position: absolute;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 160px;
+  width: 24px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  opacity: 0;
+  z-index: 3;
+}
+
+.altitude-min-mark {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 0;
+}
+
+.altitude-corner {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.altitude-min-label {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* ─── PANEL SAISON (bas-gauche) ───────────────────────────────── */
+
+.panel-saison {
+  bottom: 28px;
+  left: 28px;
+  padding: 16px 20px 18px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.saison-month {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.saison-slider-row {
+  width: 100%;
+}
+
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ─── RANGE INPUTS ────────────────────────────────────────────── */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+/* Vertical range (altitude) — redéfini pour writing-mode */
+.altitude-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+/* ─── SWATCH GRID (nuancier complet) ──────────────────────────── */
+
+.swatch-grid {
+  position: absolute;
+  top: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 560px;
+  padding: 1rem;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.swatch-grid--empty {
+  align-items: center;
+}
+
+.swatch-empty-msg {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  animation: swatchAppear 0.3s var(--ease-spring) both;
+}
+
+.swatch:hover {
+  transform: scale(1.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+.swatch:active { transform: scale(0.95); }
+
+@keyframes swatchAppear {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ─── EXPORT BUTTON ───────────────────────────────────────────── */
+
+.export-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+  pointer-events: auto;
+}
+
+.export-btn:hover { transform: translateY(2px); }
+
+/* ─── MODALE ──────────────────────────────────────────────────── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 480px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.25s ease;
+}
+
+.modal-color-band { height: 8px; border-radius: 12px 12px 0 0; }
+
+.modal-body { padding: 1.5rem; }
+
+.modal-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.modal-nom { font-size: 1.6rem; font-weight: 700; margin: 0 0 0.2rem; }
+
+.modal-species { font-style: italic; color: var(--text-secondary); margin: 0 0 1.2rem; font-size: 0.9rem; }
+
+.modal-section { margin-bottom: 1.2rem; border-top: 1px solid #eee; padding-top: 1rem; }
+
+.modal-section h3 {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin: 0 0 0.4rem;
+}
+
+.modal-section p { margin: 0 0 0.4rem; line-height: 1.5; font-size: 0.9rem; }
+
+.modal-floraison-str { font-size: 0.82rem !important; color: var(--text-secondary); white-space: pre-line; }
+
+.modal-funfact { background: #f9f7f2; border-radius: 8px; padding: 1rem; border-top: none; }
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: rgba(0,0,0,0.08);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.modal-close:hover { background: rgba(0,0,0,0.15); }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
