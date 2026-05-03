@@ -1,5 +1,8 @@
-function AltitudeSlider({ value, onChange }) {
-  const pct = 100 - ((value - 300) / (2500 - 300)) * 100
+const ALT_MAX = 3786
+const ALT_MIN = 300
+
+function AltitudeSlider({ value }) {
+  const pct = 100 - ((value - ALT_MIN) / (ALT_MAX - ALT_MIN)) * 100
 
   return (
     <div className="panel panel-altitude">
@@ -14,11 +17,12 @@ function AltitudeSlider({ value, onChange }) {
           <input
             type="range"
             className="altitude-range"
-            min={300}
-            max={2500}
-            step={50}
+            min={ALT_MIN}
+            max={ALT_MAX}
+            step={1}
             value={value}
-            onChange={e => onChange(Number(e.target.value))}
+            readOnly
+            onChange={() => {}}
           />
         </div>
         <div className="altitude-min-mark">

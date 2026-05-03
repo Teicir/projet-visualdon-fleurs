@@ -14,25 +14,22 @@ import VilleIllustration from '../illustrations/ville.svg?react'
 gsap.registerPlugin(ScrollTrigger)
 
 function ExplorerSection() {
-  const [altitude, setAltitude] = useState(1000)
+  const [altitude, setAltitude] = useState(3786)
   const [month, setMonth] = useState(6)
   const [selectedFlower, setSelectedFlower] = useState(null)
   const [shapeToFlower, setShapeToFlower] = useState({})
 
-  const sectionRef = useRef(null)
-  const montRef    = useRef(null)
-  const plaineRef  = useRef(null)
-  const villeRef   = useRef(null)
+  const montRef   = useRef(null)
+  const plaineRef = useRef(null)
+  const villeRef  = useRef(null)
 
   const { flowers, dominantColors, uniqueColors } = useFlowerFilter(altitude, month)
 
-  // Mise à jour couleurs SVG + récupération du mapping forme → fleur
   useEffect(() => {
     const mapping = updateAllLayers(flowers)
     setShapeToFlower(mapping)
   }, [flowers])
 
-  // Ajout des handlers de clic sur les formes SVG
   useEffect(() => {
     const cleanup = []
     Object.entries(shapeToFlower).forEach(([id, flower]) => {
@@ -41,67 +38,105 @@ function ExplorerSection() {
       const handler = () => setSelectedFlower(flower)
       el.addEventListener('click', handler)
       el.style.cursor = 'pointer'
-      cleanup.push(() => {
-        el.removeEventListener('click', handler)
-        el.style.cursor = ''
-      })
+      cleanup.push(() => { el.removeEventListener('click', handler); el.style.cursor = '' })
     })
     return () => cleanup.forEach(fn => fn())
   }, [shapeToFlower])
 
-  // Parallaxe GSAP — montagnes visibles au départ, plaine et ville entrent depuis le bas au scroll
+  // Altitude driven by scroll position mapped to section boundaries
+  useEffect(() => {
+    const onScroll = () => {
+      const mont   = montRef.current
+      const plaine = plaineRef.current
+      const ville  = villeRef.current
+      if (!mont || !plaine || !ville) return
+
+      const scrollTop = window.scrollY
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+
+      // Absolute top of each section in document coordinates
+      const montTop   = mont.getBoundingClientRect().top   + scrollTop
+      const plaineTop = plaine.getBoundingClientRect().top + scrollTop
+      const villeTop  = ville.getBoundingClientRect().top  + scrollTop
+
+      let newAlt
+      if (scrollTop < plaineTop) {
+        // montagne zone → 3786 down to 1500
+        const p = Math.max(0, scrollTop - montTop) / (plaineTop - montTop)
+        newAlt = 3786 - Math.min(1, p) * (3786 - 1500)
+      } else if (scrollTop < villeTop) {
+        // plaine zone → 1500 down to 600
+        const p = (scrollTop - plaineTop) / (villeTop - plaineTop)
+        newAlt = 1500 - Math.min(1, p) * (1500 - 600)
+      } else {
+        // ville zone → 600 down to 300 (ends at 300 when fully scrolled)
+        const remaining = Math.max(1, maxScroll - villeTop)
+        const p = (scrollTop - villeTop) / remaining
+        newAlt = 600 - Math.min(1, p) * (600 - 300)
+      }
+
+      setAltitude(Math.min(3786, Math.max(300, Math.round(newAlt))))
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Léger parallaxe sur chaque couche — le SVG glisse légèrement plus lentement que le scroll
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const trigger = { trigger: sectionRef.current, start: 'top top', end: 'bottom bottom', scrub: 1.5 }
-
-      // Montagnes : léger mouvement de profondeur
-      gsap.to(montRef.current, { y: '-10%', ease: 'none', scrollTrigger: trigger })
-
-      // Plaine : part hors-écran, remonte jusqu'à sa position naturelle
-      gsap.fromTo(plaineRef.current,
-        { y: '100vh' },
-        { y: '0', ease: 'none', scrollTrigger: trigger }
-      )
-
-      // Ville : entre après la plaine
-      gsap.fromTo(villeRef.current,
-        { y: '100vh' },
-        { y: '0', ease: 'none', scrollTrigger: trigger }
-      )
-    }, sectionRef)
+      [montRef, plaineRef, villeRef].forEach(ref => {
+        const svg = ref.current?.querySelector('svg')
+        if (!svg) return
+        gsap.fromTo(svg,
+          { y: '0%' },
+          {
+            y: '-8%',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: ref.current,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+            },
+          }
+        )
+      })
+    })
     return () => ctx.revert()
   }, [])
 
   return (
-    <section className="explorer-section" ref={sectionRef}>
-      <div className="parallax-container">
+    <section className="explorer-section">
 
-        <div className="parallax-layer layer-montagne" ref={montRef}>
-          <MontagneIllustration className="svg-layer" />
-        </div>
-        <div className="parallax-layer layer-plaine" ref={plaineRef}>
-          <PlaineIllustration className="svg-layer" />
-        </div>
-        <div className="parallax-layer layer-ville" ref={villeRef}>
-          <VilleIllustration className="svg-layer" />
-        </div>
-
-        <div className="controls-overlay">
-          <div className="panel panel-dominant">
-            <div className="panel-dominant-header">
-              <span className="panel-title">Couleurs dominantes</span>
-              <ExportButton targetId="dominant-export-target" colors={uniqueColors} />
-            </div>
-            <div className="dominant-swatches" id="dominant-export-target">
-              {dominantColors.map(color => (
-                <div key={color} className="dominant-swatch" style={{ backgroundColor: color }} />
-              ))}
-            </div>
+      {/* Panneaux de contrôle — fixes sur l'écran pendant tout le scroll */}
+      <div className="controls-overlay">
+        <div className="panel panel-dominant">
+          <div className="panel-dominant-header">
+            <span className="panel-title">Couleurs dominantes</span>
+            <ExportButton targetId="dominant-export-target" colors={uniqueColors} />
           </div>
-
-          <AltitudeSlider value={altitude} onChange={setAltitude} />
-          <MonthSlider value={month} onChange={setMonth} />
+          <div className="dominant-swatches" id="dominant-export-target">
+            {dominantColors.map(color => (
+              <div key={color} className="dominant-swatch" style={{ backgroundColor: color }} />
+            ))}
+          </div>
         </div>
+
+        <AltitudeSlider value={altitude} />
+        <MonthSlider value={month} onChange={setMonth} />
+      </div>
+
+      {/* Les 3 SVGs empilés — scroll naturel à travers chacun */}
+      <div className="layer-wrap" ref={montRef}>
+        <MontagneIllustration className="svg-layer" />
+      </div>
+      <div className="layer-wrap" ref={plaineRef}>
+        <PlaineIllustration className="svg-layer" />
+      </div>
+      <div className="layer-wrap" ref={villeRef}>
+        <VilleIllustration className="svg-layer" />
       </div>
 
       <FlowerModal flower={selectedFlower} onClose={() => setSelectedFlower(null)} />
