@@ -16,14 +16,17 @@ gsap.registerPlugin(ScrollTrigger)
 function ExplorerSection() {
   const [altitude, setAltitude] = useState(3786)
   const [month, setMonth] = useState(6)
-  const [selectedFlower, setSelectedFlower] = useState(null)
+  const [selectedFlowers, setSelectedFlowers] = useState([])
   const [shapeToFlower, setShapeToFlower] = useState({})
 
-  const montRef   = useRef(null)
-  const plaineRef = useRef(null)
-  const villeRef  = useRef(null)
+  const montRef    = useRef(null)
+  const plaineRef  = useRef(null)
+  const villeRef   = useRef(null)
+  const flowersRef = useRef([])
 
   const { flowers } = useFlowerFilter(altitude, month)
+
+  useEffect(() => { flowersRef.current = flowers }, [flowers])
 
   const displayedColors = useMemo(() =>
     [...new Set(Object.values(shapeToFlower).map(f => f.couleur))].slice(0, 6)
@@ -39,7 +42,10 @@ function ExplorerSection() {
     Object.entries(shapeToFlower).forEach(([id, flower]) => {
       const el = document.getElementById(id)
       if (!el) return
-      const handler = () => setSelectedFlower(flower)
+      const handler = () => {
+        const siblings = flowersRef.current.filter(f => f.couleur === flower.couleur)
+        setSelectedFlowers(siblings.length > 0 ? siblings : [flower])
+      }
       el.addEventListener('click', handler)
       el.style.cursor = 'pointer'
       cleanup.push(() => { el.removeEventListener('click', handler); el.style.cursor = '' })
@@ -150,7 +156,7 @@ function ExplorerSection() {
         <VilleIllustration className="svg-layer" />
       </div>
 
-      <FlowerModal flower={selectedFlower} onClose={() => setSelectedFlower(null)} />
+      <FlowerModal flowers={selectedFlowers} onClose={() => setSelectedFlowers([])} />
     </section>
   )
 }

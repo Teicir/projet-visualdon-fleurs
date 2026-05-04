@@ -1,60 +1,71 @@
-import { useEffect } from 'react'
-import { MOIS_COURTS } from '../data/fleurs'
+import { useState, useEffect } from 'react'
 
-function FlowerModal({ flower, onClose }) {
+function parseLocalisation(str) {
+  if (!str) return []
+  return str.split('\n').filter(Boolean).map(line => {
+    const sep = line.indexOf(' : ')
+    if (sep === -1) return { label: null, text: line }
+    return { label: line.slice(0, sep), text: line.slice(sep + 3) }
+  })
+}
+
+function FlowerModal({ flowers, onClose }) {
+  const [activeTab, setActiveTab] = useState(0)
+
+  useEffect(() => { setActiveTab(0) }, [flowers])
+
   useEffect(() => {
     const handleKey = (e) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
   }, [onClose])
 
-  if (!flower) return null
+  if (!flowers || flowers.length === 0) return null
+
+  const flower = flowers[activeTab] ?? flowers[0]
+  const locations = parseLocalisation(flower.localisation)
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <div className="modal-color-band" style={{ backgroundColor: flower.couleur }} />
+
+        <div className="modal-tabs">
+          {flowers.map((f, i) => (
+            <button
+              key={f.nom}
+              className={`modal-tab${i === activeTab ? ' modal-tab--active' : ''}`}
+              style={i === activeTab ? { '--tab-color': f.couleur } : {}}
+              onClick={() => setActiveTab(i)}
+            >
+              {f.nom}
+            </button>
+          ))}
+        </div>
 
         <div className="modal-body">
-          {flower.image && (
-            <img
-              src={flower.image}
-              alt={flower.nom}
-              className="modal-image"
-              onError={e => { e.target.style.display = 'none' }}
-            />
+          <div className="modal-top">
+            {flower.image && (
+              <img
+                src={flower.image}
+                alt={flower.nom}
+                className="modal-image"
+                onError={e => { e.target.style.display = 'none' }}
+              />
+            )}
+            <p className="modal-description">{flower.description}</p>
+          </div>
+
+          {locations.length > 0 && (
+            <div className="modal-localisation">
+              <h3 className="modal-localisation-title">Où le trouver ?&nbsp; 🔭</h3>
+              {locations.map((loc, i) => (
+                <div key={i} className="modal-location-block">
+                  {loc.label && <strong className="modal-location-label">{loc.label}</strong>}
+                  <p className="modal-location-text">{loc.text}</p>
+                </div>
+              ))}
+            </div>
           )}
-
-          <h2 className="modal-nom">{flower.nom}</h2>
-          <p className="modal-species">{flower.species}</p>
-
-          <div className="modal-section">
-            <h3>Floraison</h3>
-            <p>{flower.mois_floraison.map(m => MOIS_COURTS[m]).join(' · ')}</p>
-            <p className="modal-floraison-str">{flower.floraison_str}</p>
-          </div>
-
-          <div className="modal-section">
-            <h3>Description</h3>
-            <p>{flower.description}</p>
-          </div>
-
-          <div className="modal-section">
-            <h3>Où la trouver ?</h3>
-            {flower.localisation.split('\n').map((line, i) => (
-              <p key={i}>{line}</p>
-            ))}
-          </div>
-
-          <div className="modal-section">
-            <h3>Altitude</h3>
-            <p>{flower.altitude.min} m – {flower.altitude.max} m</p>
-          </div>
-
-          <div className="modal-section modal-funfact">
-            <h3>Le saviez-vous ?</h3>
-            <p>{flower.fun_fact}</p>
-          </div>
         </div>
 
         <button className="modal-close" onClick={onClose} aria-label="Fermer">✕</button>

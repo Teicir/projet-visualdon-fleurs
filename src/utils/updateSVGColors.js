@@ -6,13 +6,15 @@ const BASE_COLOR = '#F5F2EC'
 const shapeAssignments = {}
 
 function assignRandomGSAP(flowers, prefix, count, shapeToFlower) {
-  // Séparer les formes déjà colorées des spots libres
+  // Garder les formes dont la fleur est toujours valide, libérer les autres
   const freeIndices = []
   for (let i = 1; i <= count; i++) {
     const id = `${prefix}-${i}`
-    if (shapeAssignments[id]) {
-      shapeToFlower[id] = shapeAssignments[id]
+    const existing = shapeAssignments[id]
+    if (existing && flowers.includes(existing)) {
+      shapeToFlower[id] = existing
     } else {
+      if (existing) delete shapeAssignments[id]
       freeIndices.push(i)
     }
   }
