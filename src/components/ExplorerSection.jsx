@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useFlowerFilter } from '../hooks/useFlowerFilter'
@@ -23,7 +23,11 @@ function ExplorerSection() {
   const plaineRef = useRef(null)
   const villeRef  = useRef(null)
 
-  const { flowers, dominantColors, uniqueColors } = useFlowerFilter(altitude, month)
+  const { flowers } = useFlowerFilter(altitude, month)
+
+  const displayedColors = useMemo(() =>
+    [...new Set(Object.values(shapeToFlower).map(f => f.couleur))].slice(0, 6)
+  , [shapeToFlower])
 
   useEffect(() => {
     const mapping = updateAllLayers(flowers)
@@ -115,11 +119,18 @@ function ExplorerSection() {
         <div className="panel panel-dominant">
           <div className="panel-dominant-header">
             <span className="panel-title">Couleurs dominantes</span>
-            <ExportButton targetId="dominant-export-target" colors={uniqueColors} />
+            <ExportButton targetId="dominant-export-target" colors={displayedColors} />
           </div>
           <div className="dominant-swatches" id="dominant-export-target">
-            {dominantColors.map(color => (
-              <div key={color} className="dominant-swatch" style={{ backgroundColor: color }} />
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className="dominant-swatch"
+                style={{
+                  backgroundColor: displayedColors[i] ?? 'transparent',
+                  opacity: displayedColors[i] ? 1 : 0,
+                }}
+              />
             ))}
           </div>
         </div>

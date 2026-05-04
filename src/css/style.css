@@ -115,6 +115,10 @@ h1, h2 { font-family: var(--font-display); font-weight: 700; }
   display: block;
 }
 
+.svg-layer * {
+  stroke-width: 4px !important;
+}
+
 /* Hover sur les formes SVG cliquables */
 [id^="montagne-"]:hover,
 [id^="plaine-"]:hover,
@@ -189,7 +193,7 @@ h1, h2 { font-family: var(--font-display); font-weight: 700; }
   height: 52px;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-  transition: transform 0.2s ease;
+  transition: background-color 0.5s ease, opacity 0.4s ease, transform 0.2s ease;
 }
 
 .dominant-swatch:hover { transform: scale(1.08); }
