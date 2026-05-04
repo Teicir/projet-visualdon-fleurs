@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vérification couleurs – flore suisse</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 24px; background:#fafafa; color:#222; }
+    main { max-width: 900px; margin:auto; }
+    .card { background:white; border:1px solid #ddd; border-radius:16px; padding:20px; box-shadow:0 2px 10px #0001; }
+    img { max-width:100%; max-height:420px; object-fit:contain; border-radius:12px; background:#eee; display:block; margin:14px auto; }
+    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .swatch { width:72px; height:72px; border-radius:12px; border:1px solid #999; box-shadow: inset 0 0 0 1px #fff8; }
+    input[type="text"] { font-size:18px; padding:10px; width:130px; font-family:monospace; }
+    button, input[type="file"] { font-size:16px; padding:10px 14px; border-radius:10px; border:1px solid #bbb; background:white; cursor:pointer; }
+    button:hover { background:#f1f1f1; }
+    .muted { color:#666; }
+    .ok { background:#e9f8e9; }
+    .bad { background:#ffecec; }
+    textarea { width:100%; min-height:90px; margin-top:12px; }
+    .top { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Vérification des couleurs HEX</h1>
+  <p class="muted">Charge ton fichier JSON, puis corrige les couleurs une fleur à la fois. À la fin, exporte le JSON corrigé.</p>
+
+  <input id="file" type="file" accept=".json,application/json" />
+
+  <section id="app" class="card" style="display:none">
+    <div class="top">
+      <div>
+        <strong id="counter"></strong>
+        <h2 id="name"></h2>
+        <p id="species" class="muted"></p>
+      </div>
+      <div class="row">
+        <button id="prev">← Précédent</button>
+        <button id="next">Suivant →</button>
+      </div>
+    </div>
+
+    <img id="photo" alt="Photo de la fleur" />
+
+    <div class="row">
+      <div id="swatch" class="swatch"></div>
+      <label>
+        Couleur HEX :
+        <input id="hex" type="text" maxlength="7" placeholder="#F4D76E" />
+      </label>
+      <input id="colorPicker" type="color" />
+      <button id="save">Enregistrer cette couleur</button>
+      <button id="markOk" class="ok">Marquer OK</button>
+      <button id="markBad" class="bad">À revoir</button>
+    </div>
+
+    <textarea id="note" placeholder="Note optionnelle : pourquoi la couleur est fausse, couleur attendue, etc."></textarea>
+
+    <p id="status" class="muted"></p>
+    <button id="download">Exporter le JSON corrigé</button>
+  </section>
+</main>
+
+<script>
+let data = [];
+let i = 0;
+
+const $ = id => document.getElementById(id);
+const validHex = v => /^#[0-9A-Fa-f]{6}$/.test(v);
+
+function render() {
+  const f = data[i];
+  $("counter").textContent = `${i + 1} / ${data.length}`;
+  $("name").textContent = f.nom || "(sans nom)";
+  $("species").textContent = f.species || "";
+  $("photo").src = f.image || "";
+  $("hex").value = f.couleur || "#FFFFFF";
+  $("colorPicker").value = validHex(f.couleur) ? f.couleur : "#ffffff";
+  $("swatch").style.background = validHex(f.couleur) ? f.couleur : "#ffffff";
+  $("note").value = f.note_correction || "";
+  $("status").textContent = f.verification || "";
+}
+
+function saveCurrent() {
+  const v = $("hex").value.trim();
+  if (!validHex(v)) {
+    alert("Code HEX invalide. Format attendu : #RRGGBB, ex. #F4D76E");
+    return false;
+  }
+  data[i].couleur = v.toUpperCase();
+  data[i].note_correction = $("note").value.trim();
+  render();
+  return true;
+}
+
+$("file").addEventListener("change", async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  data = JSON.parse(await file.text());
+  i = 0;
+  $("app").style.display = "block";
+  render();
+});
+
+$("hex").addEventListener("input", e => {
+  const v = e.target.value.trim();
+  if (validHex(v)) {
+    $("swatch").style.background = v;
+    $("colorPicker").value = v;
+  }
+});
+
+$("colorPicker").addEventListener("input", e => {
+  $("hex").value = e.target.value.toUpperCase();
+  $("swatch").style.background = e.target.value;
+});
+
+$("save").onclick = () => {
+  if (saveCurrent()) $("status").textContent = "Couleur enregistrée localement.";
+};
+
+$("prev").onclick = () => {
+  saveCurrent();
+  i = Math.max(0, i - 1);
+  render();
+};
+
+$("next").onclick = () => {
+  saveCurrent();
+  i = Math.min(data.length - 1, i + 1);
+  render();
+};
+
+$("markOk").onclick = () => {
+  data[i].verification = "OK";
+  saveCurrent();
+};
+
+$("markBad").onclick = () => {
+  data[i].verification = "À revoir";
+  saveCurrent();
+};
+
+$("download").onclick = () => {
+  saveCurrent();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "fleurs_corrigees.json";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+</script>
+</body>
+</html>
